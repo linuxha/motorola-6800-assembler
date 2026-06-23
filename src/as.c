@@ -18,6 +18,7 @@ void make_pass(void);
 void re_init(void);
 void process(void);
 int parse_line(void);
+void write_s9_record(void);
 
 /*
 	as ---	cross assembler main program
@@ -98,15 +99,35 @@ int main(int argc, char *argv[])
 			    printf ("\f");
 			    cross (root);
 			  }
-		fprintf(Objfil,"S9030000FC\n"); /* at least give a decent ending */
+		write_s9_record();
 		}
 	exit(Err_count);
+}
+
+void write_s9_record(void)
+{
+	int addr;
+	int chksum;
+
+	addr = Xfer_addr & 0xFFFF;
+	chksum = 3 + (addr >> 8) + lobyte(addr);
+	chksum = ~chksum;
+
+	fprintf(Objfil,"S9");
+	hexout(3);
+	hexout(addr >> 8);
+	hexout(addr);
+	hexout(chksum);
+	fprintf(Objfil,"\n");
 }
 
 void initialize(void)
 {
 	FILE	*fopen();
-	int	i = 0;
+	char	*src;
+	char	*last_slash;
+	char	*base;
+	char	*last_dot;
 
 #ifdef DEBUG
 	printf("Initializing\n");
@@ -120,15 +141,22 @@ void initialize(void)
 	Sflag	  = 0;
 	CREflag   = 0;
 	N_page	  = 0;
+	Xfer_addr = 0;
 	Line[MAXBUF-1] = NEWLINE;
 
-	strcpy(Obj_name,Argv[1]); /* copy first file name into array */
-	do {
-	    if (Obj_name[i]=='.')
-	       Obj_name[i]=0;
-	}
-	while (Obj_name[i++] != 0);
-	strcat(Obj_name,".s19");  /* append .out to file name. */
+	src = Argv[1];
+	last_slash = strrchr(src,'/');
+	if( last_slash == NULL )
+		base = src;
+	else
+		base = last_slash + 1;
+	strncpy(Obj_name,base,MAXBUF-1);
+	Obj_name[MAXBUF-1] = EOS;
+	base = Obj_name;
+	last_dot = strrchr(base,'.');
+	if( last_dot != NULL && last_dot != base )
+		*last_dot = EOS;
+	strncat(Obj_name,".s19",MAXBUF-1-strlen(Obj_name));
 	if( (Objfil = fopen(Obj_name,"w")) == NULL)
 		fatal("Can't create object file");
 	fwdinit();	/* forward ref init */
@@ -235,4 +263,3 @@ void process(void)
 		if(Cflag)Ctotal += Cycles;
 		}
 }
-
