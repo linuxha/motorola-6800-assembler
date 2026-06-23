@@ -20,10 +20,11 @@
 #define OPT     8       /* assembler option             */
 #define NULL_OP 9       /* null pseudo op               */
 #define PAGE    10      /* new page                     */
+#define END     11      /* end/transfer address         */
 
 struct oper pseudo[] = {
 "bsz",  PSEUDO, ZMB,    0,
-"end",  PSEUDO, NULL_OP,0,
+"end",  PSEUDO, END,    0,
 "equ",  PSEUDO, EQU,    0,
 "fcb",  PSEUDO, FCB,    0,
 "fcc",  PSEUDO, FCC,    0,
@@ -164,7 +165,7 @@ void do_pseudo(int op /* which op */)
                         P_force=0;
                         N_page = 1;
                         if (Pass == 2 )
-                         if (Lflag)  
+                         if (Lflag)
                           {
                            printf ("\f");
                            printf ("%-10s",Argv[Cfn]);
@@ -172,11 +173,19 @@ void do_pseudo(int op /* which op */)
                            printf ("page %3d\n",Page_num++);
                           }
                         break;
+                case END:                       /* transfer/start address */
+                        P_force=0;
+                        Optr = skip_white(Optr);
+                        if( *Optr != EOS ){
+                                eval();
+                                Xfer_addr = Result;
+                                }
+                        break;
                 case NULL_OP:                   /* ignored psuedo ops */
                         P_force=0;
                         break;
                 default:
                         fatal("Pseudo error");
-                }
+        }
 }
 
