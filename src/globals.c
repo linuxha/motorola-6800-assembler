@@ -47,5 +47,6 @@ int     CREflag = 0;            /* cross reference table flag */
 struct  nlist *root;            /* root node of the tree */
   
 FILE    *Objfil =0;             /* object file's file descriptor*/
-char    Obj_name[] = {"             "};
+char    Obj_name[MAXBUF] = {0};
+int     Xfer_addr = 0;          /* transfer/start address for S9 record */
 

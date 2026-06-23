@@ -54,6 +54,7 @@ extern struct  nlist *root;            /* root node of the tree */
   
 extern FILE    *Objfil;             /* object file's file descriptor*/
 extern char    Obj_name[];
+extern int     Xfer_addr;           /* transfer/start address for S9 record */
 
 #endif // _GLOBALS_H_
 
